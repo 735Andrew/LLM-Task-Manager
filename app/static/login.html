@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign in</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>System Access</h1>
+
+        <form action="/login" method="POST" id="loginForm" novalidate>
+            <label for="key">Access Key</label>
+            <input
+                type="password"
+                id="key"
+                name="key"
+                minlength="8"
+                maxlength="255"
+                pattern="[A-Za-z0-9_-]{8,255}"
+                placeholder="Enter access key"
+                autocomplete="current-password"
+                required
+            >
+            <div id="error" class="error" hidden></div>
+            <button type="submit" id="submitBtn" disabled>Sign in</button>
+        </form>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
