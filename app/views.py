@@ -1,10 +1,11 @@
 import os
 
 from fastapi import APIRouter, Form, Request
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
 from pydantic import ValidationError
 
-from app.models import AccessKey
+from app.models import AccessKey, ChatMessage
+from app.llm_requests import make_request
 from config import ACCESS_KEY, STATIC_DIR
 
 router = APIRouter()
@@ -42,3 +43,37 @@ async def chat_page(request: Request):
         return RedirectResponse("/")
 
     return FileResponse(os.path.join(STATIC_DIR, "chat.html"))
+
+
+async def ask_llm(message: str) -> str:
+    llm_response = make_request(message)
+
+    if llm_response:
+        try:
+            data = llm_response["choices"][0]["message"]["content"]
+        except Exception:
+            data = "Error while extracting LLM response."
+
+    else:
+        data = "Error during the LLM API request."
+
+    return data
+
+
+@router.post("/chat/send")
+async def send_message(request: Request, message: str = Form(...)):
+    access_cookie = request.cookies.get("access_key")
+    if not access_cookie == ACCESS_KEY:
+        return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+
+    try:
+        ChatMessage(message=message)
+    except ValidationError:
+        return JSONResponse(status_code=400, content={"error": "Invalid message"})
+
+    try:
+        reply = await ask_llm(message)
+    except Exception:
+        return JSONResponse(status_code=500, content={"error": "Failed to get a response from the model"})
+
+    return JSONResponse(content={"reply": reply})
