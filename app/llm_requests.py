@@ -39,7 +39,6 @@ def make_request(message: str) -> dict:
         data = response.json()
 
     except Exception as e:
-        print(f"Error: '{e.__class__.__name__}' during the LLM API request.")
-        data = {}
+        raise ValueError(f"Error: '{e.__class__.__name__}' during the LLM API request.")
 
     return data

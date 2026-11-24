@@ -117,12 +117,20 @@ form.addEventListener('submit', async (e) => {
             body: formData,
         });
 
-        const data = await res.json();
+        const rawText = await res.text();
+        console.log("Raw server response:", rawText);
+
+        let data;
+        try {
+            data = JSON.parse(rawText);
+        } catch (parseErr) {
+            console.error("Failed to parse JSON:", rawText);
+            showError("Invalid data format received from the server.");
+            return;
+        }
 
         if (!res.ok) {
-            showError(data.error || 'Failed to send');
-            btn.disabled = false;
-            btn.textContent = 'Send';
+            showError(data.error || `Ошибка сервера: ${res.status}`);
             return;
         }
 
@@ -131,11 +139,14 @@ form.addEventListener('submit', async (e) => {
         addMessageToHistory('assistant', data.reply);
 
     } catch (err) {
-        showError('Network error. Please try again.');
+        console.error("Fetch completely failed:", err);
+        showError("СNetwork error. Please check your connection.");
     } finally {
         btn.disabled = false;
         btn.textContent = 'Send';
-        validate();
+        if (!input.value.trim()) {
+            btn.disabled = true;
+        }
     }
 });
 

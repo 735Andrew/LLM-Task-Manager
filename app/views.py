@@ -48,14 +48,13 @@ async def chat_page(request: Request):
 async def ask_llm(message: str) -> str:
     llm_response = make_request(message)
 
-    if llm_response:
-        try:
-            data = llm_response["choices"][0]["message"]["content"]
-        except Exception:
-            data = "Error while extracting LLM response."
+    if not llm_response:
+        raise ValueError("Empty response from LLM API.")
 
-    else:
-        data = "Error during the LLM API request."
+    try:
+        data = llm_response["choices"][0]["message"]["content"]
+    except Exception as e:
+        raise ValueError(f"Error: '{e.__class__.__name__}' while extracting LLM response: '{e}'.")
 
     return data
 
@@ -73,7 +72,7 @@ async def send_message(request: Request, message: str = Form(...)):
 
     try:
         reply = await ask_llm(message)
-    except Exception:
-        return JSONResponse(status_code=500, content={"error": "Failed to get a response from the model"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": e})
 
     return JSONResponse(content={"reply": reply})
