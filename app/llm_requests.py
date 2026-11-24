@@ -7,9 +7,9 @@ from config import LLM_API_URL, LLM_API_HEADERS, LLM_API_PAYLOAD, STATIC_DIR
 
 def take_context_prompt() -> str:
     """
-    Take a context prompt for an LLM.
+    Retrieve the context prompt for an LLM.
 
-    :return: Text of prompt.
+    :return: The prompt text.
     """
     FILE_PATH = os.path.join(STATIC_DIR, "prompts", "initial_prompt.md")
 
@@ -21,9 +21,9 @@ def take_context_prompt() -> str:
 
 def make_request(message: str) -> dict:
     """
-    Sends a request with prompts to an LLM.
+    Send a request containing prompts to an LLM.
 
-    :param message: The text message.
+    :param message: The user's message.
     :return: The LLM response.
     """
     LLM_API_PAYLOAD["messages"][0]["content"] = take_context_prompt()

@@ -13,11 +13,23 @@ router = APIRouter()
 
 @router.get("/")
 async def login_page():
+    """
+    Return the login page.
+
+    :return: The login page as HTML.
+    """
     return FileResponse(os.path.join(STATIC_DIR, "login.html"))
 
 
 @router.post("/login")
 async def login(key: str = Form(...)):
+    """
+    Handle the authentication process.
+
+    :param key: The access key provided by the user.
+    :return: A redirect to the chat page.
+    """
+
     try:
         AccessKey(key=key)
     except ValidationError:
@@ -38,6 +50,12 @@ async def login(key: str = Form(...)):
 
 @router.get("/chat")
 async def chat_page(request: Request):
+    """
+    Return the chat page.
+
+    :param request: The user request containing an access key in its cookies.
+    :return: The chat page as HTML.
+    """
     access_cookie = request.cookies.get("access_key")
     if not access_cookie == ACCESS_KEY:
         return RedirectResponse("/")
@@ -46,6 +64,12 @@ async def chat_page(request: Request):
 
 
 async def ask_llm(message: str) -> str:
+    """
+    Handle the interaction with an LLM.
+
+    :param message: The message by the user.
+    :return: The LLM response.
+    """
     llm_response = make_request(message)
 
     if not llm_response:
@@ -61,6 +85,15 @@ async def ask_llm(message: str) -> str:
 
 @router.post("/chat/send")
 async def send_message(request: Request, message: str = Form(...)):
+    """
+    Handle message submission.
+
+    :param request: The user request containing an access key in its cookies.
+    :param message: The message by the user.
+    :return: The LLM response.
+    """
+
+
     access_cookie = request.cookies.get("access_key")
     if not access_cookie == ACCESS_KEY:
         return JSONResponse(status_code=401, content={"error": "Unauthorized"})
